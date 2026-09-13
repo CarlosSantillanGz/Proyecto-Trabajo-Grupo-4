@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 
 interface Producto {
   id: number;
@@ -129,6 +129,55 @@ export class CatalogoProductos {
       ],
     },
   ];
+
+  protected readonly textoBusqueda = signal('');
+  protected readonly lineaFiltro = signal<number | null>(null);
+
+  protected readonly productosFiltrados = computed(() => {
+    const texto = this.normalizar(this.textoBusqueda());
+    const lineaId = this.lineaFiltro();
+
+    return this.lineas.flatMap((linea) =>
+      linea.productos
+        .filter((producto) => {
+          const coincideTexto =
+            !texto ||
+            this.normalizar(producto.nombre).includes(texto);
+
+          const coincideLinea =
+            lineaId === null || linea.id === lineaId;
+
+          return coincideTexto && coincideLinea;
+        })
+        .map((producto) => ({
+          ...producto,
+          lineaId: linea.id,
+          lineaNombre: linea.nombre,
+        })),
+    );
+  });
+
+  protected actualizarBusqueda(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.textoBusqueda.set(input.value);
+  }
+
+  protected actualizarLinea(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.lineaFiltro.set(select.value ? Number(select.value) : null);
+  }
+
+  protected limpiarFiltros(): void {
+    this.textoBusqueda.set('');
+    this.lineaFiltro.set(null);
+  }
+
+  private normalizar(valor: string): string {
+    return valor
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
 
   protected readonly lineaSeleccionada = signal<LineaProducto | null>(null);
   protected readonly productoSeleccionado = signal<Producto | null>(null);

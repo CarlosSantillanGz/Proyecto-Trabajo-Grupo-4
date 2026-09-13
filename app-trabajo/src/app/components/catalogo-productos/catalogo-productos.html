@@ -11,87 +11,128 @@
   <header class="catalogo__encabezado">
     <p class="catalogo__eyebrow">Más de 60 años fabricando en Perú</p>
     <div>
-      @if (lineaSeleccionada(); as linea) {
-        <button class="volver" type="button" (click)="volverALineas()">&#8592; Todas las líneas</button>
-        <h1>{{ linea.nombre }}</h1>
+      <section class="filtros" aria-label="Buscar y filtrar productos">
+        <label>
+          Buscar producto
+          <input type="search" placeholder="Ej. carbón, fósforos, vaso..." [value]="textoBusqueda()"
+            (input)="actualizarBusqueda($event)" />
+        </label>
+
+        <label>
+          Línea de productos
+          <select [value]="lineaFiltro() ?? ''" (change)="actualizarLinea($event)">
+            <option value="">Todas las líneas</option>
+
+            @for (linea of lineas; track linea.id) {
+            <option [value]="linea.id">{{ linea.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        @if (textoBusqueda() || lineaFiltro() !== null) {
+        <button class="limpiar-filtros" type="button" (click)="limpiarFiltros()">
+          Limpiar filtros
+        </button>
+        }
+      </section>
+
+      @if (textoBusqueda() || lineaFiltro() !== null) {
+      <section class="productos productos--detalle" aria-label="Resultados de búsqueda">
+        @for (producto of productosFiltrados(); track producto.id) {
+        <button class="producto" [class.producto--seleccionado]="productoSeleccionado()?.id === producto.id"
+          [attr.aria-pressed]="productoSeleccionado()?.id === producto.id" type="button"
+          (click)="seleccionarProducto(producto)">
+          <span class="producto__imagen-contenedor">
+            <img class="producto__imagen" [src]="producto.imagen" [alt]="producto.nombre" />
+          </span>
+
+          <span class="producto__detalle">
+            <span class="producto__nombre">{{ producto.nombre }}</span>
+            <span class="producto__descripcion">{{ producto.lineaNombre }}</span>
+            <span class="producto__accion">Seleccionar &#8594;</span>
+          </span>
+        </button>
+        } @empty {
+        <p class="sin-resultados">
+          No encontramos productos con esos criterios.
+        </p>
+        }
+      </section>
       } @else {
-        <h1>Líneas de productos Fopesa</h1>
+      <!-- Aquí va tu @if (lineaSeleccionada()) actual completo -->
+      @if (lineaSeleccionada(); as linea) {
+      <button class="volver" type="button" (click)="volverALineas()">&#8592; Todas las líneas</button>
+      <h1>{{ linea.nombre }}</h1>
+      } @else {
+      <h1>Líneas de productos Fopesa</h1>
+      }
       }
       <p class="catalogo__introduccion">
         @if (lineaSeleccionada(); as linea) {
-          {{ linea.descripcion }}
+        {{ linea.descripcion }}
         } @else {
-          Descubre nuestras líneas de menaje, cubertería y accesorios hechos para acompañarte por años.
+        Descubre nuestras líneas de menaje, cubertería y accesorios hechos para acompañarte por años.
         }
       </p>
     </div>
     @if (lineaSeleccionada(); as linea) {
-      <span class="catalogo__contador">{{ linea.productos.length }} productos</span>
+    <span class="catalogo__contador">{{ linea.productos.length }} productos</span>
     } @else {
-      <span class="catalogo__contador">{{ lineas.length }} líneas de productos</span>
+    <span class="catalogo__contador">{{ lineas.length }} líneas de productos</span>
     }
   </header>
 
   @if (lineaSeleccionada(); as linea) {
-    <section class="productos productos--detalle" aria-label="Productos de la línea seleccionada">
-      @for (producto of linea.productos; track producto.id) {
-        <button
-          class="producto"
-          [class.producto--seleccionado]="productoSeleccionado()?.id === producto.id"
-          [attr.aria-pressed]="productoSeleccionado()?.id === producto.id"
-          type="button"
-          (click)="seleccionarProducto(producto)"
-        >
-          <span class="producto__imagen-contenedor">
-            <img class="producto__imagen" [src]="producto.imagen" [alt]="producto.nombre" />
-            @if (productoSeleccionado()?.id === producto.id) {
-              <span class="producto__marca" aria-hidden="true">&#10003;</span>
-            }
-          </span>
-          <span class="producto__detalle">
-            <span class="producto__nombre">{{ producto.nombre }}</span>
-            <span class="producto__pie">
-              <strong>Ver producto</strong>
-              <span class="producto__accion">Seleccionar <span aria-hidden="true">&#8594;</span></span>
-            </span>
-          </span>
-        </button>
-      }
-    </section>
+  <section class="productos productos--detalle" aria-label="Productos de la línea seleccionada">
+    @for (producto of linea.productos; track producto.id) {
+    <button class="producto" [class.producto--seleccionado]="productoSeleccionado()?.id === producto.id"
+      [attr.aria-pressed]="productoSeleccionado()?.id === producto.id" type="button"
+      (click)="seleccionarProducto(producto)">
+      <span class="producto__imagen-contenedor">
+        <img class="producto__imagen" [src]="producto.imagen" [alt]="producto.nombre" />
+        @if (productoSeleccionado()?.id === producto.id) {
+        <span class="producto__marca" aria-hidden="true">&#10003;</span>
+        }
+      </span>
+      <span class="producto__detalle">
+        <span class="producto__nombre">{{ producto.nombre }}</span>
+        <span class="producto__pie">
+          <strong>Ver producto</strong>
+          <span class="producto__accion">Seleccionar <span aria-hidden="true">&#8594;</span></span>
+        </span>
+      </span>
+    </button>
+    }
+  </section>
   } @else {
-    <section class="productos" aria-label="Líneas de productos">
-      @for (linea of lineas; track linea.id) {
-      <button
-        class="producto"
-        [class.producto--seleccionado]="lineaSeleccionada()?.id === linea.id"
-        [attr.aria-pressed]="lineaSeleccionada()?.id === linea.id"
-        type="button"
-        (click)="seleccionarLinea(linea)"
-      >
-        <span class="producto__imagen-contenedor">
-          <img class="producto__imagen" [src]="linea.imagen" [alt]="linea.nombre" />
-          @if (lineaSeleccionada()?.id === linea.id) {
-            <span class="producto__marca" aria-hidden="true">&#10003;</span>
-          }
+  <section class="productos" aria-label="Líneas de productos">
+    @for (linea of lineas; track linea.id) {
+    <button class="producto" [class.producto--seleccionado]="lineaSeleccionada()?.id === linea.id"
+      [attr.aria-pressed]="lineaSeleccionada()?.id === linea.id" type="button" (click)="seleccionarLinea(linea)">
+      <span class="producto__imagen-contenedor">
+        <img class="producto__imagen" [src]="linea.imagen" [alt]="linea.nombre" />
+        @if (lineaSeleccionada()?.id === linea.id) {
+        <span class="producto__marca" aria-hidden="true">&#10003;</span>
+        }
+      </span>
+      <span class="producto__detalle">
+        <span class="producto__nombre">{{ linea.nombre }}</span>
+        <span class="producto__descripcion">{{ linea.descripcion }}</span>
+        <span class="producto__pie">
+          <strong>{{ linea.productos.length }} productos</strong>
+          <span class="producto__accion">Ver línea <span aria-hidden="true">&#8594;</span></span>
         </span>
-        <span class="producto__detalle">
-          <span class="producto__nombre">{{ linea.nombre }}</span>
-          <span class="producto__descripcion">{{ linea.descripcion }}</span>
-          <span class="producto__pie">
-            <strong>{{ linea.productos.length }} productos</strong>
-            <span class="producto__accion">Ver línea <span aria-hidden="true">&#8594;</span></span>
-          </span>
-        </span>
-      </button>
-      }
-    </section>
+      </span>
+    </button>
+    }
+  </section>
   }
 
   @if (productoSeleccionado(); as producto) {
-    <aside class="seleccion" aria-live="polite">
-      <span class="seleccion__indicador" aria-hidden="true">&#10003;</span>
-      <p><span>Producto seleccionado</span><strong>{{ producto.nombre }}</strong></p>
-      <a class="seleccion__enlace" [href]="lineaSeleccionada()?.enlace" target="_blank" rel="noopener">Explorar línea</a>
-    </aside>
+  <aside class="seleccion" aria-live="polite">
+    <span class="seleccion__indicador" aria-hidden="true">&#10003;</span>
+    <p><span>Producto seleccionado</span><strong>{{ producto.nombre }}</strong></p>
+    <a class="seleccion__enlace" [href]="lineaSeleccionada()?.enlace" target="_blank" rel="noopener">Explorar línea</a>
+  </aside>
   }
 </main>
