@@ -151,16 +151,21 @@ h1 {
 
 .producto__imagen-contenedor {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
   aspect-ratio: 1 / 1.08;
   overflow: hidden;
   background: #dfeeff;
+  padding: 16px 16px 0;
 }
 
 .producto__imagen {
   display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
   object-fit: cover;
   transition: transform 300ms ease;
 }

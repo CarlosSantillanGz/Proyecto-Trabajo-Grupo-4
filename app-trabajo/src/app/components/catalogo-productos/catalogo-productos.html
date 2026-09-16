@@ -1,13 +1,4 @@
 <main class="catalogo">
-  <nav class="barra-superior" aria-label="Navegación principal">
-    <a class="marca" href="/" aria-label="Fopesa, inicio">
-      <span class="marca__simbolo" aria-hidden="true">F</span>
-      <span>FOPESA</span>
-    </a>
-    <span class="barra-superior__descriptor">Fabril Oficial Peruana S.A.</span>
-    <span class="barra-superior__categoria">Menaje para cada día</span>
-  </nav>
-
   <header class="catalogo__encabezado">
     <p class="catalogo__eyebrow">Más de 60 años fabricando en Perú</p>
     <div>
@@ -87,7 +78,7 @@
     @for (producto of linea.productos; track producto.id) {
     <button class="producto" [class.producto--seleccionado]="productoSeleccionado()?.id === producto.id"
       [attr.aria-pressed]="productoSeleccionado()?.id === producto.id" type="button"
-      (click)="seleccionarProducto(producto)">
+      (click)="seleccionarProducto(producto, linea.nombre, linea.descripcion)">
       <span class="producto__imagen-contenedor">
         <img class="producto__imagen" [src]="producto.imagen" [alt]="producto.nombre" />
         @if (productoSeleccionado()?.id === producto.id) {
@@ -135,4 +126,10 @@
     <a class="seleccion__enlace" [href]="lineaSeleccionada()?.enlace" target="_blank" rel="noopener">Explorar línea</a>
   </aside>
   }
+
+  <app-product-modal
+    [producto]="productoDetalle()"
+    (cerrado)="cerrarDetalle()"
+    (agregado)="agregarAlCarrito($event)"
+  />
 </main>

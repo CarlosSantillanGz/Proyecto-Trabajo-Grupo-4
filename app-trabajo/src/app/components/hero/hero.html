@@ -1,0 +1,68 @@
+﻿<section class="hero" aria-labelledby="hero-title">
+  <nav class="hero__nav" aria-label="Navegación principal">
+    <div class="brand" aria-label="Fopesa logo">
+      <span class="brand__mark">F</span>
+      <span class="brand__name">FOPESA</span>
+    </div>
+
+    <div class="nav-links" aria-label="Secciones">
+      <a href="#catalogo">Catálogo</a>
+      <a href="#contacto">B2B</a>
+      <a href="#servicios">Servicios</a>
+    </div>
+
+    <a class="button button--nav" href="#contacto" (click)="scrollToSection('contacto', $event)">Cotizar ahora</a>
+  </nav>
+
+  <div class="hero__content">
+    <span class="eyebrow">Soluciones B2B para Perú</span>
+    <h1 id="hero-title">Productos esenciales para crecer con tu negocio.</h1>
+    <p class="hero__text">
+      Fabricamos soluciones prácticas para restaurantes, comercios, hogares y distribuidores que
+      buscan calidad, rapidez y confianza en cada pedido.
+    </p>
+
+    <div class="hero__actions">
+      <a class="button button--primary" href="#contacto" (click)="scrollToSection('contacto', $event)">
+        Solicitar cotización
+      </a>
+      <a class="button button--secondary" href="#catalogo" (click)="scrollToSection('catalogo', $event)">
+        Ver catálogo
+      </a>
+    </div>
+
+    <ul class="hero__stats" aria-label="Estadísticas de negocio">
+      <li>
+        <strong>+60 años</strong>
+        <span>de experiencia</span>
+      </li>
+      <li>
+        <strong>1,200+</strong>
+        <span>clientes activos</span>
+      </li>
+      <li>
+        <strong>24h</strong>
+        <span>respuesta comercial</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="hero__panel" aria-label="Productos destacados">
+    <div class="product-card product-card--featured">
+      <span class="tag">Línea Parrillera</span>
+      <h2>Todo para grill y hogar</h2>
+      <p>Carbón, brochetas, mecheros y accesorios que acompañan cada buena reunión.</p>
+    </div>
+
+    <div class="mini-grid">
+      <div class="product-card product-card--soft">
+        <span class="mini-label">Eco Food</span>
+        <strong>Envases sostenibles</strong>
+      </div>
+      <div class="product-card product-card--accent">
+        <span class="mini-label">Joven</span>
+        <strong>Encendedores</strong>
+      </div>
+    </div>
+  </div>
+</section>

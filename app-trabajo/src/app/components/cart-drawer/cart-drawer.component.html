@@ -1,0 +1,73 @@
+@if (cart.isOpen()) {
+  <div class="drawer-backdrop" role="presentation" (click)="cart.close()"></div>
+}
+
+<button
+  class="cart-trigger"
+  type="button"
+  aria-label="Abrir carrito"
+  [attr.aria-expanded]="cart.isOpen()"
+  (click)="cart.open()"
+>
+  <span aria-hidden="true">&#128722;</span>
+  <span>Carrito</span>
+  @if (cart.totalItems() > 0) {
+    <strong>{{ cart.totalItems() }}</strong>
+  }
+</button>
+
+<aside class="drawer" [class.drawer--open]="cart.isOpen()" aria-label="Productos seleccionados">
+  <div class="drawer__header">
+    <div>
+      <span class="drawer__eyebrow">Tu selección</span>
+      <h2>Carrito</h2>
+    </div>
+    <button class="drawer__close" type="button" aria-label="Cerrar carrito" (click)="cart.close()">
+      &times;
+    </button>
+  </div>
+
+  <div class="drawer__body">
+    @if (cart.items().length > 0) {
+      <ul class="cart-list">
+        @for (item of cart.items(); track item.producto.id) {
+          <li class="cart-item">
+            <img [src]="item.producto.imagen" [alt]="item.producto.nombre" />
+            <div class="cart-item__info">
+              <strong>{{ item.producto.nombre }}</strong>
+              <span>{{ item.producto.lineaNombre || 'Producto Fopesa' }}</span>
+              <small>Cantidad: {{ item.cantidad }}</small>
+            </div>
+            <button
+              class="cart-item__remove"
+              type="button"
+              [attr.aria-label]="'Quitar ' + item.producto.nombre"
+              (click)="cart.remove(item.producto.id)"
+            >
+              &times;
+            </button>
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="drawer__empty">
+        <span aria-hidden="true">&#128722;</span>
+        <p>Aún no has agregado productos.</p>
+        <small>Explora el catálogo y selecciona lo que necesitas.</small>
+      </div>
+    }
+  </div>
+
+  <div class="drawer__footer">
+    <div class="drawer__summary">
+      <span>Productos seleccionados</span>
+      <strong>{{ cart.totalItems() }}</strong>
+    </div>
+    <button class="drawer__contact" type="button" (click)="cart.scrollToContact($event)">
+      Solicitar cotización
+    </button>
+    @if (cart.items().length > 0) {
+      <button class="drawer__clear" type="button" (click)="cart.clear()">Vaciar selección</button>
+    }
+  </div>
+</aside>

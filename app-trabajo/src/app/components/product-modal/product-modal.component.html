@@ -1,0 +1,46 @@
+@if (producto; as detalle) {
+  <div class="modal-backdrop" role="presentation" (click)="cerrar()">
+    <section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="product-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <button class="modal__close" type="button" aria-label="Cerrar detalle" (click)="cerrar()">
+        &times;
+      </button>
+
+      <div class="modal__image-wrapper">
+        <img class="modal__image" [src]="detalle.imagen" [alt]="detalle.nombre" />
+      </div>
+
+      <div class="modal__content">
+        <span class="modal__eyebrow">{{ detalle.lineaNombre || 'Producto Fopesa' }}</span>
+        <h2 id="product-modal-title">{{ detalle.nombre }}</h2>
+        <p class="modal__description">
+          {{ detalle.descripcion || 'Producto práctico y confiable para acompañar las necesidades de tu negocio.' }}
+        </p>
+
+        <dl class="modal__specifications">
+          <div>
+            <dt>Categoría</dt>
+            <dd>{{ detalle.lineaNombre || 'Línea Fopesa' }}</dd>
+          </div>
+          <div>
+            <dt>Disponibilidad</dt>
+            <dd>Consulta por volumen</dd>
+          </div>
+          <div>
+            <dt>Atención</dt>
+            <dd>Asesoría comercial B2B</dd>
+          </div>
+        </dl>
+
+        <button class="modal__add" type="button" (click)="agregarAlCarrito()">
+          Agregar al carrito
+        </button>
+      </div>
+    </section>
+  </div>
+}

@@ -1,10 +1,8 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { ProductModalComponent } from '../product-modal/product-modal.component';
+import { CartProduct, CartService } from '../../services/cart.service';
 
-interface Producto {
-  id: number;
-  nombre: string;
-  imagen: string;
-}
+interface Producto extends CartProduct {}
 
 interface LineaProducto {
   id: number;
@@ -17,10 +15,14 @@ interface LineaProducto {
 
 @Component({
   selector: 'app-catalogo-productos',
+  standalone: true,
+  imports: [ProductModalComponent],
   templateUrl: './catalogo-productos.html',
   styleUrl: './catalogo-productos.css',
 })
 export class CatalogoProductos {
+  private readonly cartService = inject(CartService);
+
   protected readonly lineas: LineaProducto[] = [
     {
       id: 1,
@@ -181,14 +183,42 @@ export class CatalogoProductos {
 
   protected readonly lineaSeleccionada = signal<LineaProducto | null>(null);
   protected readonly productoSeleccionado = signal<Producto | null>(null);
+  protected readonly productoDetalle = signal<Producto | null>(null);
 
   protected seleccionarLinea(linea: LineaProducto): void {
     this.lineaSeleccionada.set(linea);
     this.productoSeleccionado.set(null);
   }
 
-  protected seleccionarProducto(producto: Producto): void {
+  protected seleccionarProducto(
+    producto: Producto,
+    lineaNombre?: string,
+    descripcion?: string,
+  ): void {
     this.productoSeleccionado.set(producto);
+    this.abrirDetalle(producto, lineaNombre, descripcion);
+  }
+
+  protected abrirDetalle(
+    producto: Producto,
+    lineaNombre?: string,
+    descripcion?: string,
+  ): void {
+    this.productoSeleccionado.set(producto);
+    this.productoDetalle.set({
+      ...producto,
+      lineaNombre: producto.lineaNombre ?? lineaNombre,
+      descripcion: producto.descripcion ?? descripcion,
+    });
+  }
+
+  protected cerrarDetalle(): void {
+    this.productoDetalle.set(null);
+  }
+
+  protected agregarAlCarrito(producto: CartProduct): void {
+    this.cartService.add(producto);
+    this.cerrarDetalle();
   }
 
   protected volverALineas(): void {
