@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+.page-shell {
+  display: grid;
+  gap: 2rem;
+  padding: 0 1rem 4rem;
+}
