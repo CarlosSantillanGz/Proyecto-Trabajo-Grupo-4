@@ -4,6 +4,7 @@ export interface CartProduct {
   id: number;
   nombre: string;
   imagen: string;
+  precio?: number;
   lineaNombre?: string;
   descripcion?: string;
 }
@@ -22,6 +23,12 @@ export class CartService {
   readonly items = this.cartItems.asReadonly();
   readonly totalItems = computed(() =>
     this.cartItems().reduce((total, item) => total + item.cantidad, 0),
+  );
+  readonly totalPrice = computed(() =>
+    this.cartItems().reduce(
+      (total, item) => total + (item.producto.precio ?? 0) * item.cantidad,
+      0,
+    ),
   );
   readonly isOpen = signal(false);
 

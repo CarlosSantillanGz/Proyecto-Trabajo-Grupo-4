@@ -1,9 +1,11 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CartProduct } from '../../services/cart.service';
 
 @Component({
   selector: 'app-product-modal',
   standalone: true,
+  imports: [DecimalPipe],
   templateUrl: './product-modal.component.html',
   styleUrl: './product-modal.component.css',
 })

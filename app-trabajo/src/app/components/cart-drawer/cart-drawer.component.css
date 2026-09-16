@@ -141,6 +141,11 @@
   font-size: 0.75rem;
 }
 
+.cart-item__subtotal {
+  margin-top: 0.15rem;
+  color: var(--verde-fopesa) !important;
+}
+
 .drawer__empty {
   display: grid;
   place-items: center;
@@ -174,6 +179,16 @@
 
 .drawer__summary strong {
   color: var(--negro-fopesa);
+}
+
+.drawer__summary--total {
+  padding-top: 0.8rem;
+  border-top: 1px solid rgb(22 22 22 / 10%);
+  font-weight: 700;
+}
+
+.drawer__summary--total strong {
+  color: var(--azul-fopesa);
 }
 
 .drawer__contact {
