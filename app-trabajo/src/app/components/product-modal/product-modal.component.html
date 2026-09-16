@@ -18,6 +18,13 @@
       <div class="modal__content">
         <span class="modal__eyebrow">{{ detalle.lineaNombre || 'Producto Fopesa' }}</span>
         <h2 id="product-modal-title">{{ detalle.nombre }}</h2>
+        <p class="modal__price">
+          @if (detalle.precio !== undefined) {
+            S/ {{ detalle.precio | number: '1.2-2' }}
+          } @else {
+            Precio por consultar
+          }
+        </p>
         <p class="modal__description">
           {{ detalle.descripcion || 'Producto práctico y confiable para acompañar las necesidades de tu negocio.' }}
         </p>

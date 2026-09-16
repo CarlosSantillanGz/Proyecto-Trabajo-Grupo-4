@@ -213,6 +213,12 @@ h1 {
   line-height: 1.45;
 }
 
+.producto__precio {
+  color: var(--verde-fopesa);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
 .producto__pie {
   display: flex;
   align-items: center;

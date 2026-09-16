@@ -40,6 +40,13 @@
           <span class="producto__detalle">
             <span class="producto__nombre">{{ producto.nombre }}</span>
             <span class="producto__descripcion">{{ producto.lineaNombre }}</span>
+            <span class="producto__precio">
+              @if (producto.precio !== undefined) {
+                S/ {{ producto.precio | number: '1.2-2' }}
+              } @else {
+                Precio por consultar
+              }
+            </span>
             <span class="producto__accion">Seleccionar &#8594;</span>
           </span>
         </button>
@@ -88,7 +95,13 @@
       <span class="producto__detalle">
         <span class="producto__nombre">{{ producto.nombre }}</span>
         <span class="producto__pie">
-          <strong>Ver producto</strong>
+            <strong>
+              @if (producto.precio !== undefined) {
+                S/ {{ producto.precio | number: '1.2-2' }}
+              } @else {
+                Precio por consultar
+              }
+            </strong>
           <span class="producto__accion">Seleccionar <span aria-hidden="true">&#8594;</span></span>
         </span>
       </span>
