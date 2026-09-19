@@ -44,7 +44,25 @@
                   Por consultar
                 }
               </small>
-              <small>Cantidad: {{ item.cantidad }}</small>
+              <div class="cart-item__quantity" aria-label="Cantidad de producto">
+                <button
+                  class="quantity-control"
+                  type="button"
+                  [attr.aria-label]="'Disminuir cantidad de ' + item.producto.nombre"
+                  (click)="cart.decrease(item.producto.id)"
+                >
+                  &minus;
+                </button>
+                <span aria-live="polite">{{ item.cantidad }}</span>
+                <button
+                  class="quantity-control"
+                  type="button"
+                  [attr.aria-label]="'Aumentar cantidad de ' + item.producto.nombre"
+                  (click)="cart.increase(item.producto.id)"
+                >
+                  &plus;
+                </button>
+              </div>
               @if (item.producto.precio !== undefined) {
                 <strong class="cart-item__subtotal">
                   Subtotal: S/ {{ item.producto.precio * item.cantidad | number: '1.2-2' }}
