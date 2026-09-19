@@ -141,6 +141,37 @@
   font-size: 0.75rem;
 }
 
+.cart-item__quantity {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: fit-content;
+  margin-top: 0.2rem;
+  color: var(--negro-fopesa);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.quantity-control {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgb(22 22 22 / 18%);
+  border-radius: 50%;
+  background: white;
+  color: var(--negro-fopesa);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+}
+
+.quantity-control:hover,
+.quantity-control:focus-visible {
+  border-color: var(--verde-fopesa);
+  color: var(--verde-fopesa);
+}
+
 .cart-item__subtotal {
   margin-top: 0.15rem;
   color: var(--verde-fopesa) !important;

@@ -50,6 +50,28 @@ export class CartService {
     this.isOpen.set(true);
   }
 
+  increase(productId: number): void {
+    this.cartItems.update((items) =>
+      items.map((item) =>
+        item.producto.id === productId
+          ? { ...item, cantidad: item.cantidad + 1 }
+          : item,
+      ),
+    );
+  }
+
+  decrease(productId: number): void {
+    this.cartItems.update((items) =>
+      items
+        .map((item) =>
+          item.producto.id === productId
+            ? { ...item, cantidad: item.cantidad - 1 }
+            : item,
+        )
+        .filter((item) => item.cantidad > 0),
+    );
+  }
+
   remove(productId: number): void {
     this.cartItems.update((items) =>
       items.filter((item) => item.producto.id !== productId),
