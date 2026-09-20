@@ -1,0 +1,59 @@
+:host { display: block; }
+
+.contacto {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  background: rgba(15, 98, 254, 0.08);
+  color: var(--azul-fopesa);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+}
+
+.contacto h2 {
+  color: var(--negro-fopesa);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.contacto__text {
+  color: #495663;
+  max-width: 480px;
+  margin: 0 auto 2.5rem;
+}
+
+.canales-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.canal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(22, 22, 22, 0.06);
+  border-radius: 16px;
+  padding: 1.75rem 1rem;
+  text-decoration: none;
+  color: var(--negro-fopesa);
+  transition: transform 0.15s ease;
+}
+
+.canal-card:hover { transform: translateY(-3px); }
+
+.icono { font-size: 1.6rem; }
+
+.canal-card span:last-child { color: #495663; font-size: 0.9rem; }

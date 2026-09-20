@@ -1,0 +1,25 @@
+<section class="contacto" aria-labelledby="contacto-title">
+  <span class="eyebrow">CONTÁCTANOS</span>
+  <h2 id="contacto-title">Estamos para ayudarte</h2>
+  <p class="contacto__text">
+    ¿Tienes una consulta sobre tu compra? Encuentra aquí todos nuestros canales de atención.
+  </p>
+
+  <div class="canales-grid">
+    <a
+      *ngFor="let canal of canales"
+      class="canal-card"
+      [href]="canal.href"
+      target="_blank"
+      rel="noopener"
+    >
+      <span class="icono" aria-hidden="true">{{ canal.icono }}</span>
+      <strong>{{ canal.nombre }}</strong>
+      <span>{{ canal.valor }}</span>
+    </a>
+  </div>
+
+  <a class="button button--primary" href="https://wa.me/51984000000" target="_blank" rel="noopener">
+    Contactar ahora
+  </a>
+</section>

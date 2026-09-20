@@ -1,0 +1,205 @@
+@if (cart.checkoutOpen()) {
+  <div class="checkout-backdrop" role="presentation">
+    <section class="checkout" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+      <button class="checkout__close" type="button" aria-label="Cerrar" (click)="cerrar()">
+        &times;
+      </button>
+
+      @if (paso === 'datos') {
+        <h2 id="checkout-title">Finalizar compra</h2>
+
+        <div class="checkout__resumen">
+          <h3>Resumen del pedido</h3>
+          <ul>
+            @for (item of cart.items(); track item.producto.id) {
+              <li>
+                <span>{{ item.producto.nombre }} x{{ item.cantidad }}</span>
+                @if (item.producto.precio !== undefined) {
+                  <strong>S/ {{ item.producto.precio * item.cantidad | number: '1.2-2' }}</strong>
+                }
+              </li>
+            }
+          </ul>
+          <div class="checkout__total">
+            <span>Total</span>
+            <strong>S/ {{ cart.totalPrice() | number: '1.2-2' }}</strong>
+          </div>
+        </div>
+
+        <form class="checkout__form" #datosForm="ngForm" (ngSubmit)="continuarAPago()">
+          <label>
+            Nombre completo
+            <input type="text" name="nombre" [(ngModel)]="datos.nombre" required minlength="2" />
+          </label>
+          <label>
+            Correo electrónico
+            <input type="email" name="email" [(ngModel)]="datos.email" required email />
+          </label>
+          <label>
+            Teléfono
+            <input type="tel" name="telefono" [(ngModel)]="datos.telefono" required minlength="6" />
+          </label>
+          <label>
+            Dirección de entrega
+            <input type="text" name="direccion" [(ngModel)]="datos.direccion" required minlength="5" />
+          </label>
+
+          <button class="checkout__confirm" type="submit" [disabled]="datosForm.invalid">
+            Continuar al pago
+          </button>
+        </form>
+      }
+
+      @if (paso === 'pago') {
+        <h2 id="checkout-title">Método de pago</h2>
+
+        <div class="checkout__total checkout__total--pago">
+          <span>Total a pagar</span>
+          <strong>S/ {{ cart.totalPrice() | number: '1.2-2' }}</strong>
+        </div>
+
+        <div class="metodos-pago">
+          @for (metodo of metodosPago; track metodo.id) {
+            <button
+              type="button"
+              class="metodo-pago"
+              [class.metodo-pago--activo]="metodoPago === metodo.id"
+              (click)="seleccionarMetodo(metodo.id)"
+            >
+              <span class="metodo-pago__icono" aria-hidden="true">{{ metodo.icono }}</span>
+              <span>{{ metodo.nombre }}</span>
+            </button>
+          }
+        </div>
+
+        @if (metodoPago === 'tarjeta') {
+          <div class="form-tarjeta">
+            <label>
+              Número de tarjeta
+              <input
+                type="text"
+                inputmode="numeric"
+                placeholder="0000 0000 0000 0000"
+                maxlength="19"
+                name="numeroTarjeta"
+                [(ngModel)]="tarjeta.numero"
+                (input)="formatearNumeroTarjeta()"
+              />
+            </label>
+            <label>
+              Nombre del titular
+              <input
+                type="text"
+                placeholder="Como aparece en la tarjeta"
+                name="titular"
+                [(ngModel)]="tarjeta.titular"
+              />
+            </label>
+            <div class="form-tarjeta__fila">
+              <label>
+                Vencimiento
+                <input
+                  type="text"
+                  placeholder="MM/AA"
+                  maxlength="5"
+                  name="vencimiento"
+                  [(ngModel)]="tarjeta.vencimiento"
+                  (input)="formatearVencimiento()"
+                />
+              </label>
+              <label>
+                CVV
+                <input
+                  type="password"
+                  inputmode="numeric"
+                  maxlength="3"
+                  name="cvv"
+                  [(ngModel)]="tarjeta.cvv"
+                />
+              </label>
+            </div>
+          </div>
+        }
+
+        @if (metodoPago === 'yape' || metodoPago === 'pagoefectivo') {
+          <div class="pago-qr">
+            <div class="pago-qr__box" aria-hidden="true">
+              <span>▦</span>
+            </div>
+            <p class="pago-qr__codigo">
+              {{ metodoPago === 'yape' ? 'Código de operación' : 'Código CIP' }}:
+              <strong>{{ codigoPago }}</strong>
+            </p>
+            <p class="metodo-pago__nota">
+              @if (metodoPago === 'yape') {
+                Abre Yape, escanea el código QR o ingresa el código de operación para pagar
+                S/ {{ cart.totalPrice() | number: '1.2-2' }}.
+              } @else {
+                Paga este código en un agente autorizado o desde tu banca móvil antes de las
+                próximas 24 horas.
+              }
+            </p>
+          </div>
+        }
+
+        <div class="checkout__acciones">
+          <button class="checkout__volver" type="button" (click)="volverADatos()">Volver</button>
+          <button
+            class="checkout__confirm"
+            type="button"
+            [disabled]="!metodoPago || !metodoPagoValido"
+            (click)="confirmarPedido()"
+          >
+            Confirmar pedido
+          </button>
+        </div>
+      }
+
+      @if (paso === 'confirmado' && pedidoActual; as pedido) {
+        <div class="seguimiento">
+          <span class="checkout__check" aria-hidden="true">&#10003;</span>
+          <h2>¡Compra realizada!</h2>
+          <p class="seguimiento__pedido-id">Pedido {{ pedido.id }}</p>
+          <p>
+            Gracias {{ pedido.cliente.nombre }}, pagaste con
+            <strong>{{ pedido.metodoPago }}</strong>. Puedes revisar el estado de tu pedido
+            cuando quieras en "Mis pedidos".
+          </p>
+
+          <h3 class="seguimiento__titulo">Seguimiento de compra</h3>
+
+          <div class="seguimiento__timeline">
+            @for (etapa of pasosSeguimiento; track etapa.titulo; let i = $index) {
+              <div class="paso-timeline" [class.paso-timeline--activo]="i <= cart.estadoPedido(pedido)">
+                <div class="paso-timeline__icono">{{ etapa.icono }}</div>
+                <strong>{{ etapa.titulo }}</strong>
+                <span>
+                  @if (i === 0) {
+                    {{ pedido.fecha | date: 'dd/MM HH:mm' }}
+                  } @else if (i <= cart.estadoPedido(pedido)) {
+                    Completado
+                  } @else {
+                    Pendiente
+                  }
+                </span>
+              </div>
+              @if (i < 3) {
+                <div class="paso-timeline__linea"></div>
+              }
+            }
+          </div>
+
+          <p class="seguimiento__ayuda">
+            Guarda tu número de pedido y el correo o teléfono que usaste: los necesitarás para
+            buscar tu pedido en <strong>Mis pedidos</strong>.
+          </p>
+          <a class="checkout__link" routerLink="/mis-pedidos" (click)="cerrar()">
+            Ir a seguimiento de mi pedido
+          </a>
+
+          <button class="checkout__confirm" type="button" (click)="cerrar()">Cerrar</button>
+        </div>
+      }
+    </section>
+  </div>
+}

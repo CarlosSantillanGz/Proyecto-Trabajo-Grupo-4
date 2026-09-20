@@ -1,22 +1,16 @@
 import { Component } from '@angular/core';
-import { B2bForm } from './components/b2b-form/b2b-form';
-import { CatalogoProductos } from './components/catalogo-productos/catalogo-productos';
+import { RouterOutlet } from '@angular/router';
 import { CartDrawerComponent } from './components/cart-drawer/cart-drawer.component';
-import { Hero } from './components/hero/hero';
+import { Checkout } from './components/checkout/checkout';
 
 @Component({
-  imports: [Hero, CatalogoProductos, B2bForm, CartDrawerComponent],
+  imports: [RouterOutlet, CartDrawerComponent, Checkout],
   selector: 'app-root',
   styleUrl: './app.css',
   template: `
-    <app-hero></app-hero>
-    <section id="catalogo">
-      <app-catalogo-productos></app-catalogo-productos>
-    </section>
-    <section id="contacto">
-      <app-b2b-form></app-b2b-form>
-    </section>
+    <router-outlet></router-outlet>
     <app-cart-drawer></app-cart-drawer>
+    <app-checkout></app-checkout>
   `,
 })
 export class App {}

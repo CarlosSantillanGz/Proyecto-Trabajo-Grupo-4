@@ -101,6 +101,15 @@
     <button class="drawer__contact" type="button" (click)="cart.scrollToContact($event)">
       Solicitar cotización
     </button>
+    
+    <button
+  class="drawer__buy"
+  type="button"
+  [disabled]="cart.items().length === 0"
+  (click)="cart.openCheckout()"
+>
+  Comprar
+</button>
     @if (cart.items().length > 0) {
       <button class="drawer__clear" type="button" (click)="cart.clear()">Vaciar selección</button>
     }

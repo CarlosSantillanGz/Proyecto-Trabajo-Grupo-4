@@ -1,0 +1,83 @@
+<section class="seguimiento-pagina">
+  <a class="volver" routerLink="/">&larr; Volver a la tienda</a>
+
+  <span class="eyebrow">SEGUIMIENTO DE COMPRA</span>
+  <h1>Ubica tu pedido</h1>
+  <p class="intro">
+    Por seguridad, solo puedes ver el detalle de tu pedido si conoces el número de pedido y el
+    correo o teléfono que usaste al comprar.
+  </p>
+
+  @if (!pedidoEncontrado) {
+    <form class="buscador" (ngSubmit)="buscarPedido()">
+      <label>
+        Número de pedido
+        <input
+          type="text"
+          placeholder="FOP-123456"
+          name="numeroPedido"
+          [(ngModel)]="numeroPedido"
+          required
+        />
+      </label>
+      <label>
+        Correo o teléfono usado en la compra
+        <input type="text" name="contacto" [(ngModel)]="contacto" required />
+      </label>
+      <button type="submit">Buscar pedido</button>
+    </form>
+
+    @if (buscado && errorBusqueda) {
+      <p class="error">{{ errorBusqueda }}</p>
+    }
+  }
+
+  @if (pedidoEncontrado; as pedido) {
+    <div class="resultado">
+      <button class="nueva-busqueda" type="button" (click)="nuevaBusqueda()">
+        &larr; Buscar otro pedido
+      </button>
+
+      <h2>Pedido {{ pedido.id }}</h2>
+      <p class="resultado__fecha">{{ pedido.fecha | date: 'dd/MM/yyyy HH:mm' }}</p>
+
+      <ul class="resultado__productos">
+        @for (item of pedido.items; track item.producto.id) {
+          <li>
+            <span>{{ item.producto.nombre }} x{{ item.cantidad }}</span>
+            @if (item.producto.precio !== undefined) {
+              <strong>S/ {{ item.producto.precio * item.cantidad | number: '1.2-2' }}</strong>
+            }
+          </li>
+        }
+      </ul>
+      <div class="resultado__total">
+        <span>Total</span>
+        <strong>S/ {{ pedido.total | number: '1.2-2' }}</strong>
+      </div>
+      <p class="resultado__pago">Método de pago: {{ pedido.metodoPago }}</p>
+
+      <h3 class="seguimiento__titulo">Seguimiento de compra</h3>
+      <div class="seguimiento__timeline">
+        @for (etapa of pasosSeguimiento; track etapa.titulo; let i = $index) {
+          <div class="paso-timeline" [class.paso-timeline--activo]="i <= cart.estadoPedido(pedido)">
+            <div class="paso-timeline__icono">{{ etapa.icono }}</div>
+            <strong>{{ etapa.titulo }}</strong>
+            <span>
+              @if (i === 0) {
+                {{ pedido.fecha | date: 'HH:mm' }}
+              } @else if (i <= cart.estadoPedido(pedido)) {
+                Completado
+              } @else {
+                Pendiente
+              }
+            </span>
+          </div>
+          @if (i < 3) {
+            <div class="paso-timeline__linea"></div>
+          }
+        }
+      </div>
+    </div>
+  }
+</section>

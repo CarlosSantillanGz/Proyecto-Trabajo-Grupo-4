@@ -233,6 +233,23 @@
   font-weight: 700;
 }
 
+.drawer__buy {
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--azul-fopesa);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.drawer__buy:disabled {
+  background: #e5e5e5;
+  color: #9a9a9a;
+  cursor: not-allowed;
+}
+
 .drawer__clear {
   border: 0;
   background: transparent;
