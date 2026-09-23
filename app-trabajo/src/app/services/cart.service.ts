@@ -22,12 +22,21 @@ export interface DatosCliente {
   direccion: string;
 }
 
+export interface ModalidadEntrega {
+  id: string;
+  nombre: string;
+  detalle: string;
+  tiempo: string;
+  costo: number;
+}
+
 export interface Pedido {
   id: string;
   fecha: number;
   items: CartItem[];
   total: number;
   metodoPago: string;
+  modalidadEntrega: ModalidadEntrega;
   cliente: DatosCliente;
 }
 
@@ -128,13 +137,18 @@ export class CartService {
     this.orderConfirmed.set(false);
   }
 
-  confirmOrder(cliente: DatosCliente, metodoPago: string): Pedido {
+  confirmOrder(
+    cliente: DatosCliente,
+    metodoPago: string,
+    modalidadEntrega: ModalidadEntrega,
+  ): Pedido {
     const pedido: Pedido = {
       id: 'FOP-' + Date.now().toString().slice(-6),
       fecha: Date.now(),
       items: this.cartItems(),
       total: this.totalPrice(),
       metodoPago,
+      modalidadEntrega,
       cliente,
     };
 
