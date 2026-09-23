@@ -1,0 +1,44 @@
+<main class="promociones">
+  <header class="promociones__header">
+    <a class="promociones__back" routerLink="/">&#8592; Volver al inicio</a>
+    <p class="promociones__eyebrow">Beneficios Fopesa</p>
+    <h1>Promociones para tu negocio</h1>
+    <p class="promociones__intro">
+      Encuentra oportunidades especiales en productos esenciales para el hogar, la parrilla y tu negocio.
+    </p>
+  </header>
+
+  <section class="promociones__grid" aria-label="Promociones disponibles">
+    @for (promocion of promociones; track promocion.id) {
+      <article class="promocion">
+        <div class="promocion__imagen-contenedor">
+          <img class="promocion__imagen" [src]="promocion.producto.imagen" [alt]="promocion.producto.nombre" />
+          <span class="promocion__etiqueta">{{ promocion.etiqueta }}</span>
+        </div>
+        <div class="promocion__contenido">
+          <p class="promocion__titulo">{{ promocion.titulo }}</p>
+          <h2>{{ promocion.beneficio }}</h2>
+          <p class="promocion__detalle">{{ promocion.detalle }}</p>
+          <div class="promocion__pie">
+            <strong>S/ {{ promocion.producto.precio | number: '1.2-2' }}</strong>
+            <button type="button" (click)="seleccionarPromocion(promocion)">
+              Ver producto <span aria-hidden="true">&#8594;</span>
+            </button>
+          </div>
+        </div>
+      </article>
+    }
+  </section>
+
+  <p class="promociones__nota">
+    Promociones referenciales. Consulta disponibilidad y condiciones comerciales con nuestro equipo.
+  </p>
+
+  @if (promocionSeleccionada(); as promocion) {
+    <app-product-modal
+      [producto]="promocion.producto"
+      (cerrado)="cerrarDetalle()"
+      (agregado)="agregarAlCarrito($event)"
+    />
+  }
+</main>

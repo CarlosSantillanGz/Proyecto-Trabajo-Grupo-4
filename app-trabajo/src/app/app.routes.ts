@@ -12,4 +12,9 @@ export const routes: Routes = [
         (m) => m.SeguimientoPedido,
       ),
   },
+  {
+    path: 'promociones',
+    loadComponent: () =>
+      import('./pages/promociones/promociones').then((m) => m.Promociones),
+  },
 ];

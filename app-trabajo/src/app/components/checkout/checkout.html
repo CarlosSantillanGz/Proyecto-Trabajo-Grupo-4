@@ -45,9 +45,49 @@
           </label>
 
           <button class="checkout__confirm" type="submit" [disabled]="datosForm.invalid">
-            Continuar al pago
+            Continuar a entrega
           </button>
         </form>
+      }
+
+      @if (paso === 'entrega') {
+        <h2 id="checkout-title">Selecciona la modalidad de entrega</h2>
+        <p class="checkout__intro">Elige cómo deseas recibir tu pedido.</p>
+
+        <div class="modalidades-entrega" role="radiogroup" aria-label="Modalidades de entrega">
+          @for (modalidad of modalidadesEntrega; track modalidad.id) {
+            <button
+              type="button"
+              class="modalidad-entrega"
+              [class.modalidad-entrega--activa]="modalidadEntrega?.id === modalidad.id"
+              [attr.aria-checked]="modalidadEntrega?.id === modalidad.id"
+              role="radio"
+              (click)="seleccionarEntrega(modalidad)"
+            >
+              <span class="modalidad-entrega__marca" aria-hidden="true">
+                {{ modalidadEntrega?.id === modalidad.id ? '&#10003;' : '' }}
+              </span>
+              <span>
+                <strong>{{ modalidad.nombre }}</strong>
+                <small>{{ modalidad.detalle }}</small>
+                <small>{{ modalidad.tiempo }}</small>
+              </span>
+              <b>{{ modalidad.costo === 0 ? 'Gratis' : 'S/ ' + modalidad.costo }}</b>
+            </button>
+          }
+        </div>
+
+        <div class="checkout__acciones">
+          <button class="checkout__volver" type="button" (click)="volverADatos()">Volver</button>
+          <button
+            class="checkout__confirm"
+            type="button"
+            [disabled]="!modalidadEntrega"
+            (click)="continuarDesdeEntrega()"
+          >
+            Continuar al pago
+          </button>
+        </div>
       }
 
       @if (paso === 'pago') {
@@ -143,7 +183,7 @@
         }
 
         <div class="checkout__acciones">
-          <button class="checkout__volver" type="button" (click)="volverADatos()">Volver</button>
+          <button class="checkout__volver" type="button" (click)="volverAEntrega()">Volver</button>
           <button
             class="checkout__confirm"
             type="button"
@@ -164,6 +204,10 @@
             Gracias {{ pedido.cliente.nombre }}, pagaste con
             <strong>{{ pedido.metodoPago }}</strong>. Puedes revisar el estado de tu pedido
             cuando quieras en "Mis pedidos".
+          </p>
+          <p>
+            Modalidad de entrega:
+            <strong>{{ pedido.modalidadEntrega?.nombre || 'No especificada' }}</strong>
           </p>
 
           <h3 class="seguimiento__titulo">Seguimiento de compra</h3>
