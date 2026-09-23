@@ -202,6 +202,32 @@
   font-weight: 700;
 }
 
+.drawer__buy {
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--azul-fopesa);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.drawer__buy:hover:not(:disabled),
+.drawer__buy:focus-visible:not(:disabled) {
+  background: #0043ce;
+  outline: 2px solid rgb(15 98 254 / 25%);
+  outline-offset: 2px;
+  transform: translateY(-1px);
+}
+
+.drawer__buy:disabled {
+  background: #a6a6a6;
+  color: #f4f4f4;
+  cursor: not-allowed;
+}
+
 .drawer__clear {
   border: 0;
   background: transparent;
