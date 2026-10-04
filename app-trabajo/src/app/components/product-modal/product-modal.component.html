@@ -36,7 +36,19 @@
           </div>
           <div>
             <dt>Disponibilidad</dt>
-            <dd>Consulta por volumen</dd>
+            <dd>
+              @if (verificando()) {
+                Consultando...
+              } @else if (disponibilidad(); as stock) {
+                @if (stock.disponible) {
+                  Disponible: {{ stock.stock }} unidades
+                } @else {
+                  Agotado
+                }
+              } @else {
+                No disponible
+              }
+            </dd>
           </div>
           <div>
             <dt>Atención</dt>
@@ -44,8 +56,17 @@
           </div>
         </dl>
 
-        <button class="modal__add" type="button" (click)="agregarAlCarrito()">
-          Agregar al carrito
+        @if (errorDisponibilidad()) {
+          <p class="modal__stock-error" role="alert">{{ errorDisponibilidad() }}</p>
+        }
+
+        <button
+          class="modal__add"
+          type="button"
+          [disabled]="verificando() || !disponibilidad()?.disponible"
+          (click)="agregarAlCarrito()"
+        >
+          {{ verificando() ? 'Consultando stock...' : 'Agregar al carrito' }}
         </button>
       </div>
     </section>

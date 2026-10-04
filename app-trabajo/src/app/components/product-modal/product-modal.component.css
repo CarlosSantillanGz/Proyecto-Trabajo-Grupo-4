@@ -126,6 +126,17 @@
   background: #084dcc;
 }
 
+.modal__add:disabled {
+  background: #8a929b;
+  cursor: not-allowed;
+}
+
+.modal__stock-error {
+  margin: 0;
+  color: #a32318;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 640px) {
   .modal {
     grid-template-columns: 1fr;

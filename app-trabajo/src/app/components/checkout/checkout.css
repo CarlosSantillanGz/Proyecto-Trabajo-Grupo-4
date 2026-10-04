@@ -106,6 +106,12 @@
   font-size: 0.9rem;
 }
 
+.checkout__error {
+  margin: 0;
+  color: #a32318;
+  font-size: 0.9rem;
+}
+
 .modalidades-entrega {
   display: grid;
   gap: 0.75rem;

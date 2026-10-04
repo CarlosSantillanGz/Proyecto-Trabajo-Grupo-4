@@ -58,11 +58,15 @@
                   class="quantity-control"
                   type="button"
                   [attr.aria-label]="'Aumentar cantidad de ' + item.producto.nombre"
-                  (click)="cart.increase(item.producto.id)"
+                  [disabled]="checkingProductId() === item.producto.id"
+                  (click)="increase(item.producto.id, item.cantidad)"
                 >
                   &plus;
                 </button>
               </div>
+              @if (stockErrors()[item.producto.id]; as stockError) {
+                <small class="cart-item__stock-error" role="alert">{{ stockError }}</small>
+              }
               @if (item.producto.precio !== undefined) {
                 <strong class="cart-item__subtotal">
                   Subtotal: S/ {{ item.producto.precio * item.cantidad | number: '1.2-2' }}
