@@ -1,8 +1,10 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, inject, signal } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CartService, ModalidadEntrega, Pedido } from '../../services/cart.service';
+import { CustomerService } from '../../services/customer.service';
 
 type PasoCheckout = 'datos' | 'entrega' | 'pago' | 'confirmado';
 
@@ -15,12 +17,18 @@ type PasoCheckout = 'datos' | 'entrega' | 'pago' | 'confirmado';
 })
 export class Checkout {
   protected readonly cart = inject(CartService);
+  private readonly customerService = inject(CustomerService);
+  protected readonly registrandoCliente = signal(false);
+  protected readonly errorRegistroCliente = signal('');
+  protected readonly errorCamposCliente =
+    'Completa nombres, apellidos, un correo válido y un teléfono de 6 a 20 caracteres.';
 
   protected paso: PasoCheckout = 'datos';
   protected pedidoActual: Pedido | null = null;
 
   protected datos = {
     nombre: '',
+    apellido: '',
     email: '',
     telefono: '',
     direccion: '',
@@ -68,13 +76,31 @@ export class Checkout {
     cvv: '',
   };
 
-  protected continuarAPago(): void {
-    if (!this.modalidadEntrega) {
-      this.paso = 'entrega';
+  protected async continuarAPago(form: NgForm): Promise<void> {
+    if (form.invalid) {
+      form.form.markAllAsTouched();
+      this.errorRegistroCliente.set(this.errorCamposCliente);
       return;
     }
+    if (this.registrandoCliente()) return;
 
-    this.paso = 'pago';
+    this.registrandoCliente.set(true);
+    this.errorRegistroCliente.set('');
+    try {
+      await this.customerService.registrar(this.datos);
+      this.paso = 'entrega';
+    } catch (error) {
+      const serverMessage = error instanceof HttpErrorResponse
+        ? error.error?.mensaje
+        : null;
+      this.errorRegistroCliente.set(
+        typeof serverMessage === 'string'
+          ? serverMessage
+          : 'No se pudieron registrar tus datos. Verifica la conexión e inténtalo nuevamente.',
+      );
+    } finally {
+      this.registrandoCliente.set(false);
+    }
   }
 
   protected volverADatos(): void {
@@ -150,7 +176,7 @@ export class Checkout {
     this.codigoPago = '';
     this.pedidoActual = null;
     this.tarjeta = { numero: '', titular: '', vencimiento: '', cvv: '' };
-    this.datos = { nombre: '', email: '', telefono: '', direccion: '' };
+    this.datos = { nombre: '', apellido: '', email: '', telefono: '', direccion: '' };
   }
 
   private generarCodigo(): string {

@@ -26,10 +26,14 @@
           </div>
         </div>
 
-        <form class="checkout__form" #datosForm="ngForm" (ngSubmit)="continuarAPago()">
+        <form class="checkout__form" #datosForm="ngForm" (ngSubmit)="continuarAPago(datosForm)">
           <label>
-            Nombre completo
-            <input type="text" name="nombre" [(ngModel)]="datos.nombre" required minlength="2" />
+            Nombres
+            <input type="text" name="nombre" [(ngModel)]="datos.nombre" required minlength="2" maxlength="100" />
+          </label>
+          <label>
+            Apellidos
+            <input type="text" name="apellido" [(ngModel)]="datos.apellido" required minlength="2" maxlength="100" />
           </label>
           <label>
             Correo electrónico
@@ -37,15 +41,19 @@
           </label>
           <label>
             Teléfono
-            <input type="tel" name="telefono" [(ngModel)]="datos.telefono" required minlength="6" />
+            <input type="tel" name="telefono" [(ngModel)]="datos.telefono" required minlength="6" maxlength="20" pattern="[0-9+() -]{6,20}" />
           </label>
           <label>
             Dirección de entrega
-            <input type="text" name="direccion" [(ngModel)]="datos.direccion" required minlength="5" />
+            <input type="text" name="direccion" [(ngModel)]="datos.direccion" minlength="5" maxlength="255" />
           </label>
 
-          <button class="checkout__confirm" type="submit" [disabled]="datosForm.invalid">
-            Continuar a entrega
+          @if (errorRegistroCliente()) {
+            <p class="checkout__error" role="alert">{{ errorRegistroCliente() }}</p>
+          }
+
+          <button class="checkout__confirm" type="submit" [disabled]="registrandoCliente()">
+            {{ registrandoCliente() ? 'Registrando datos...' : 'Continuar a entrega' }}
           </button>
         </form>
       }

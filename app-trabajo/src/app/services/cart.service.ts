@@ -17,6 +17,7 @@ export interface CartItem {
 
 export interface DatosCliente {
   nombre: string;
+  apellido: string;
   email: string;
   telefono: string;
   direccion: string;

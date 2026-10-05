@@ -63,6 +63,12 @@
   padding: 1.5rem;
 }
 
+.cart-item__stock-error {
+  display: block;
+  margin-top: 0.35rem;
+  color: #a32318;
+}
+
 .drawer__header {
   display: flex;
   align-items: flex-start;
