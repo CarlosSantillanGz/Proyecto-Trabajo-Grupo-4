@@ -2,7 +2,9 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CartService, Pedido } from '../../services/cart.service';
+import { OrdersService } from '../../services/orders.service';
 
 @Component({
   selector: 'app-seguimiento-pedido',
@@ -13,12 +15,14 @@ import { CartService, Pedido } from '../../services/cart.service';
 })
 export class SeguimientoPedido {
   protected readonly cart = inject(CartService);
+  private readonly ordersService = inject(OrdersService);
 
   protected numeroPedido = '';
   protected contacto = '';
   protected pedidoEncontrado: Pedido | null = null;
   protected buscado = false;
   protected errorBusqueda = '';
+  protected buscando = false;
 
   protected readonly pasosSeguimiento = [
     { titulo: 'Recibimos tu pedido', icono: '📝' },
@@ -27,7 +31,7 @@ export class SeguimientoPedido {
     { titulo: 'Pedido entregado', icono: '✅' },
   ];
 
-  protected buscarPedido(): void {
+  protected async buscarPedido(): Promise<void> {
     this.buscado = true;
     this.errorBusqueda = '';
     this.pedidoEncontrado = null;
@@ -40,19 +44,41 @@ export class SeguimientoPedido {
       return;
     }
 
-    const pedido = this.cart.pedidos().find((p) => {
-      const coincideId = p.id.toUpperCase() === idBuscado;
-      const coincideContacto =
-        p.cliente.email.toLowerCase() === contactoBuscado ||
-        p.cliente.telefono.toLowerCase() === contactoBuscado;
-      return coincideId && coincideContacto;
-    });
-
-    if (pedido) {
-      this.pedidoEncontrado = pedido;
-    } else {
+    this.buscando = true;
+    try {
+      const order = await this.ordersService.consultar(idBuscado, contactoBuscado);
+      const isPickup = order.modalidad.toLowerCase().includes('recojo');
+      this.pedidoEncontrado = {
+        id: order.idPedido,
+        fecha: new Date(order.fecha).getTime(),
+        estado: order.estado,
+        items: order.items.map((item) => ({
+          producto: {
+            id: item.idProducto,
+            nombre: item.nombre,
+            imagen: item.imagen,
+            precio: item.precio,
+          },
+          cantidad: item.cantidad,
+        })),
+        total: order.total,
+        modalidadEntrega: {
+          id: isPickup ? 'recojo' : 'domicilio',
+          nombre: order.modalidad,
+          detalle: '',
+          tiempo: '',
+          costo: order.costoEntrega,
+        },
+        cliente: order.cliente,
+      };
+    } catch (error) {
+      const serverMessage = error instanceof HttpErrorResponse ? error.error?.mensaje : null;
       this.errorBusqueda =
-        'No encontramos ningún pedido con esos datos. Verifica el número de pedido y el correo o teléfono usados en la compra.';
+        typeof serverMessage === 'string'
+          ? serverMessage
+          : 'No se pudo consultar el pedido. Verifica la conexión e inténtalo nuevamente.';
+    } finally {
+      this.buscando = false;
     }
   }
 

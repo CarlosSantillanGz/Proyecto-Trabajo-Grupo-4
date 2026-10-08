@@ -5,6 +5,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CartService, ModalidadEntrega, Pedido } from '../../services/cart.service';
 import { CustomerService } from '../../services/customer.service';
+import { OrdersService } from '../../services/orders.service';
 
 type PasoCheckout = 'datos' | 'entrega' | 'pago' | 'confirmado';
 
@@ -18,13 +19,17 @@ type PasoCheckout = 'datos' | 'entrega' | 'pago' | 'confirmado';
 export class Checkout {
   protected readonly cart = inject(CartService);
   private readonly customerService = inject(CustomerService);
+  private readonly ordersService = inject(OrdersService);
   protected readonly registrandoCliente = signal(false);
+  protected readonly registrandoPedido = signal(false);
   protected readonly errorRegistroCliente = signal('');
+  protected readonly errorRegistroPedido = signal('');
   protected readonly errorCamposCliente =
     'Completa nombres, apellidos, un correo válido y un teléfono de 6 a 20 caracteres.';
 
   protected paso: PasoCheckout = 'datos';
   protected pedidoActual: Pedido | null = null;
+  private idCliente: number | null = null;
 
   protected datos = {
     nombre: '',
@@ -56,7 +61,7 @@ export class Checkout {
       nombre: 'Entrega a domicilio',
       detalle: 'Recibe tu pedido en la dirección registrada.',
       tiempo: 'Entre 2 y 5 días hábiles',
-      costo: 0,
+      costo: 8,
     },
     {
       id: 'recojo',
@@ -87,12 +92,11 @@ export class Checkout {
     this.registrandoCliente.set(true);
     this.errorRegistroCliente.set('');
     try {
-      await this.customerService.registrar(this.datos);
+      const customer = await this.customerService.registrar(this.datos);
+      this.idCliente = customer.idCliente;
       this.paso = 'entrega';
     } catch (error) {
-      const serverMessage = error instanceof HttpErrorResponse
-        ? error.error?.mensaje
-        : null;
+      const serverMessage = error instanceof HttpErrorResponse ? error.error?.mensaje : null;
       this.errorRegistroCliente.set(
         typeof serverMessage === 'string'
           ? serverMessage
@@ -151,17 +155,63 @@ export class Checkout {
     return this.metodoPago === 'yape' || this.metodoPago === 'pagoefectivo';
   }
 
-  protected confirmarPedido(): void {
-    if (!this.metodoPago || !this.metodoPagoValido || !this.modalidadEntrega) {
+  protected get totalAPagar(): number {
+    return this.cart.totalPrice() + (this.modalidadEntrega?.costo ?? 0);
+  }
+
+  protected async confirmarPedido(): Promise<void> {
+    if (
+      !this.metodoPago ||
+      !this.metodoPagoValido ||
+      !this.modalidadEntrega ||
+      this.idCliente === null ||
+      this.registrandoPedido()
+    ) {
       return;
     }
 
-    this.pedidoActual = this.cart.confirmOrder(
-      this.datos,
-      this.nombreMetodoPago(),
-      this.modalidadEntrega,
-    );
-    this.paso = 'confirmado';
+    this.registrandoPedido.set(true);
+    this.errorRegistroPedido.set('');
+    try {
+      const order = await this.ordersService.crear(
+        this.idCliente,
+        this.cart.items().map((item) => ({
+          idProducto: item.producto.id,
+          cantidad: item.cantidad,
+        })),
+        this.modalidadEntrega.id === 'recojo' ? 'pickup' : 'delivery',
+      );
+      const pedido: Pedido = {
+        id: order.idPedido,
+        fecha: new Date(order.fecha).getTime(),
+        estado: order.estado,
+        items: order.items.map((item) => ({
+          producto: {
+            id: item.idProducto,
+            nombre: item.nombre,
+            imagen: item.imagen,
+            precio: item.precio,
+          },
+          cantidad: item.cantidad,
+        })),
+        total: order.total,
+        metodoPago: this.nombreMetodoPago(),
+        modalidadEntrega: this.modalidadEntrega,
+        cliente: { ...this.datos },
+      };
+      this.cart.registrarPedido(pedido);
+      this.pedidoActual = pedido;
+      this.paso = 'confirmado';
+    } catch (error) {
+      const serverMessage = error instanceof HttpErrorResponse ? error.error?.mensaje : null;
+      this.errorRegistroPedido.set(
+        typeof serverMessage === 'string'
+          ? serverMessage
+          : 'No se pudo registrar el pedido. Verifica la conexión e inténtalo nuevamente.',
+      );
+    } finally {
+      this.registrandoPedido.set(false);
+    }
   }
 
   protected nombreMetodoPago(): string {
@@ -175,6 +225,7 @@ export class Checkout {
     this.modalidadEntrega = null;
     this.codigoPago = '';
     this.pedidoActual = null;
+    this.idCliente = null;
     this.tarjeta = { numero: '', titular: '', vencimiento: '', cvv: '' };
     this.datos = { nombre: '', apellido: '', email: '', telefono: '', direccion: '' };
   }

@@ -24,7 +24,9 @@
         Correo o teléfono usado en la compra
         <input type="text" name="contacto" [(ngModel)]="contacto" required />
       </label>
-      <button type="submit">Buscar pedido</button>
+      <button type="submit" [disabled]="buscando">
+        {{ buscando ? 'Buscando...' : 'Buscar pedido' }}
+      </button>
     </form>
 
     @if (buscado && errorBusqueda) {
@@ -55,7 +57,9 @@
         <span>Total</span>
         <strong>S/ {{ pedido.total | number: '1.2-2' }}</strong>
       </div>
-      <p class="resultado__pago">Método de pago: {{ pedido.metodoPago }}</p>
+      @if (pedido.metodoPago) {
+        <p class="resultado__pago">Método de pago: {{ pedido.metodoPago }}</p>
+      }
 
       <h3 class="seguimiento__titulo">Seguimiento de compra</h3>
       <div class="seguimiento__timeline">

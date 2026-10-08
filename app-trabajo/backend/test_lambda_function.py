@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from lambda_function import lambda_handler
+from lambda_function import ApiError, lambda_handler
 
 
 def api_event(product_id="27", quantity="1", method="GET"):
@@ -17,6 +17,15 @@ def customer_event(body, method="POST"):
     return {
         "rawPath": "/clientes",
         "body": json.dumps(body),
+        "requestContext": {"http": {"method": method}},
+    }
+
+
+def order_event(path, body=None, method="POST", query=None):
+    return {
+        "rawPath": path,
+        "body": json.dumps(body) if body is not None else "",
+        "queryStringParameters": query or {},
         "requestContext": {"http": {"method": method}},
     }
 
@@ -107,6 +116,73 @@ class CustomerRegistrationHandlerTests(unittest.TestCase):
 
         self.assertEqual(response["statusCode"], 200)
         self.assertFalse(json.loads(response["body"])["created"])
+
+
+class OrderHandlerTests(unittest.TestCase):
+    order = {
+        "idCliente": 12,
+        "items": [{"idProducto": 101, "cantidad": 2}],
+        "modalidad": "pickup",
+    }
+
+    @patch(
+        "lambda_function._create_order",
+        return_value={
+            "idPedido": "FOP-000901",
+            "fecha": "2026-10-08T12:00:00",
+            "estado": "Recibido",
+            "total": 3.0,
+            "items": [],
+            "modalidad": "pickup",
+        },
+    )
+    def test_creates_order(self, create_order):
+        response = lambda_handler(order_event("/pedidos", self.order), None)
+
+        self.assertEqual(response["statusCode"], 201)
+        self.assertEqual(json.loads(response["body"])["estado"], "Recibido")
+        create_order.assert_called_once_with(self.order)
+
+    @patch("lambda_function._create_order")
+    def test_rejects_invalid_order_before_database_access(self, create_order):
+        invalid = dict(self.order, items=[{"idProducto": 101, "cantidad": 0}])
+        response = lambda_handler(order_event("/pedidos", invalid), None)
+
+        self.assertEqual(response["statusCode"], 400)
+        create_order.assert_not_called()
+
+    @patch("lambda_function._create_order", side_effect=ApiError(409, "Stock insuficiente"))
+    def test_returns_conflict_when_stock_is_insufficient(self, _create_order):
+        response = lambda_handler(order_event("/pedidos", self.order), None)
+
+        self.assertEqual(response["statusCode"], 409)
+        self.assertEqual(json.loads(response["body"])["mensaje"], "Stock insuficiente")
+
+    @patch(
+        "lambda_function._update_order_status",
+        return_value={"idPedido": "FOP-000901", "estado": "Confirmado"},
+    )
+    def test_updates_order_status(self, update_status):
+        response = lambda_handler(
+            order_event("/pedidos/901/estado", {"estado": "Confirmado"}, "PATCH"),
+            None,
+        )
+
+        self.assertEqual(response["statusCode"], 200)
+        update_status.assert_called_once_with(901, "Confirmado")
+
+    @patch(
+        "lambda_function._get_order",
+        return_value={"idPedido": "FOP-000901", "estado": "Recibido"},
+    )
+    def test_gets_order_using_contact(self, get_order):
+        response = lambda_handler(
+            order_event("/pedidos/901", method="GET", query={"contacto": "ana@example.com"}),
+            None,
+        )
+
+        self.assertEqual(response["statusCode"], 200)
+        get_order.assert_called_once_with(901, "ana@example.com")
 
 
 if __name__ == "__main__":

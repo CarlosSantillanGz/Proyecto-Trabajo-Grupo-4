@@ -9,9 +9,16 @@ Configure an API Gateway HTTP API route with the Lambda integration:
 ```text
 GET /productos/{idProducto}/disponibilidad?cantidad=1
 POST /clientes
+POST /pedidos
+PATCH /pedidos/{idPedido}/estado
+GET /pedidos/{idPedido}?contacto=correo-o-telefono
 ```
 
-The availability response includes `stock`, `disponible`, `cantidadSolicitada`, and `puedeAtender`. `POST /clientes` accepts `nombre`, `apellido`, `email`, `telefono`, and optional `direccion`; it inserts the customer or updates the row with the same email. The handler is read-only for inventory; the order-creation flow must check stock again transactionally before reducing inventory to avoid overselling when concurrent requests occur.
+The availability response includes `stock`, `disponible`, `cantidadSolicitada`, and `puedeAtender`. `POST /clientes` accepts `nombre`, `apellido`, `email`, `telefono`, and optional `direccion`; it inserts the customer or updates the row with the same email.
+
+`POST /pedidos` accepts `idCliente`, `items` (`idProducto` and `cantidad`), and `modalidad` (`delivery` or `pickup`). The handler reads prices and delivery costs from SQL Server, checks and reduces stock, and inserts the order and its details in one serializable transaction. If a product is missing or stock is insufficient, it rolls back the complete transaction and returns an error. The database must contain delivery methods named `Delivery` and `Recojo en tienda`, as in `seed_fopesa.sql`.
+
+`PATCH /pedidos/{idPedido}/estado` accepts an `estado` from `Recibido`, `Confirmado`, `Listo`, or `Entregado`, and permits only the next state in that sequence. `GET /pedidos/{idPedido}` returns the order only when `contacto` matches its customer's email or phone. API Gateway must define these methods and paths for the Lambda integration.
 
 ## Local API
 
