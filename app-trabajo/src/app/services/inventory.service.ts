@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable, InjectionToken } from '@angular/core';
+import { inject, Injectable, InjectionToken, isDevMode } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 export interface DisponibilidadProducto {
@@ -12,7 +12,9 @@ export interface DisponibilidadProducto {
 
 export const INVENTORY_API_URL = new InjectionToken<string>('INVENTORY_API_URL', {
   providedIn: 'root',
-  factory: () => 'http://localhost:8000',
+  factory: () => isDevMode()
+    ? 'http://localhost:8001'
+    : 'https://gysn1n5a51.execute-api.us-east-1.amazonaws.com/v1',
 });
 
 @Injectable({ providedIn: 'root' })

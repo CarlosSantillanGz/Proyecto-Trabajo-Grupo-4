@@ -1,6 +1,6 @@
 import json
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from lambda_function import lambda_handler
 
@@ -22,6 +22,35 @@ def customer_event(body, method="POST"):
 
 
 class AvailabilityHandlerTests(unittest.TestCase):
+    def test_fetch_product_uses_configured_connection_string(self):
+        fake_pyodbc = Mock()
+        connection = Mock()
+        cursor = Mock()
+        cursor.fetchone.return_value = (0, 1)
+        connection.cursor.return_value = cursor
+        fake_pyodbc.connect.return_value = connection
+        connection_string = "Driver={ODBC Driver 18 for SQL Server};Server=test;Database=FOPESA;"
+
+        with patch.dict(os.environ, {"FOPESA_DB_CONNECTION_STRING": connection_string}), patch.dict(
+            sys.modules, {"pyodbc": fake_pyodbc}
+        ):
+            product = _fetch_product(103)
+
+        fake_pyodbc.connect.assert_called_once_with(connection_string, timeout=5)
+        self.assertEqual(product, {"stock": 0, "estado": True})
+
+    def test_cors_origin_removes_trailing_slash(self):
+        with patch.dict(
+            os.environ,
+            {"CORS_ALLOW_ORIGIN": "https://staging.d3ec8ojg53tzlk.amplifyapp.com/"},
+        ):
+            headers = _response(200, {})["headers"]
+
+        self.assertEqual(
+            headers["Access-Control-Allow-Origin"],
+            "https://staging.d3ec8ojg53tzlk.amplifyapp.com",
+        )
+
     @patch("lambda_function._fetch_product", return_value={"stock": 4, "estado": True})
     def test_reports_available_stock_and_accepts_requested_quantity(self, fetch_product):
         response = lambda_handler(api_event(quantity="3"), None)

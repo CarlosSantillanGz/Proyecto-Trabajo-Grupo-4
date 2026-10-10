@@ -10,7 +10,7 @@ def _response(status_code, payload):
         "statusCode": status_code,
         "headers": {
             "Content-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": os.getenv("CORS_ALLOW_ORIGIN", "*"),
+            "Access-Control-Allow-Origin": os.getenv("CORS_ALLOW_ORIGIN", "*").strip().rstrip("/"),
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
         },
