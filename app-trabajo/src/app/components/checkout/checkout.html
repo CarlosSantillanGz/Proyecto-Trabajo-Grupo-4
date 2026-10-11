@@ -103,7 +103,7 @@
 
         <div class="checkout__total checkout__total--pago">
           <span>Total a pagar</span>
-          <strong>S/ {{ cart.totalPrice() | number: '1.2-2' }}</strong>
+          <strong>S/ {{ totalAPagar | number: '1.2-2' }}</strong>
         </div>
 
         <div class="metodos-pago">
@@ -181,7 +181,7 @@
             <p class="metodo-pago__nota">
               @if (metodoPago === 'yape') {
                 Abre Yape, escanea el código QR o ingresa el código de operación para pagar
-                S/ {{ cart.totalPrice() | number: '1.2-2' }}.
+                S/ {{ totalAPagar | number: '1.2-2' }}.
               } @else {
                 Paga este código en un agente autorizado o desde tu banca móvil antes de las
                 próximas 24 horas.
@@ -192,13 +192,16 @@
 
         <div class="checkout__acciones">
           <button class="checkout__volver" type="button" (click)="volverAEntrega()">Volver</button>
+          @if (errorRegistroPedido()) {
+            <p class="checkout__error" role="alert">{{ errorRegistroPedido() }}</p>
+          }
           <button
             class="checkout__confirm"
             type="button"
-            [disabled]="!metodoPago || !metodoPagoValido"
+            [disabled]="!metodoPago || !metodoPagoValido || registrandoPedido()"
             (click)="confirmarPedido()"
           >
-            Confirmar pedido
+            {{ registrandoPedido() ? 'Registrando pedido...' : 'Confirmar pedido' }}
           </button>
         </div>
       }
@@ -209,10 +212,12 @@
           <h2>¡Compra realizada!</h2>
           <p class="seguimiento__pedido-id">Pedido {{ pedido.id }}</p>
           <p>
-            Gracias {{ pedido.cliente.nombre }}, pagaste con
-            <strong>{{ pedido.metodoPago }}</strong>. Puedes revisar el estado de tu pedido
+            Gracias {{ pedido.cliente.nombre }}. Puedes revisar el estado de tu pedido
             cuando quieras en "Mis pedidos".
           </p>
+          @if (pedido.metodoPago) {
+            <p>El método de pago seleccionado es <strong>{{ pedido.metodoPago }}</strong>.</p>
+          }
           <p>
             Modalidad de entrega:
             <strong>{{ pedido.modalidadEntrega?.nombre || 'No especificada' }}</strong>

@@ -16,6 +16,9 @@ class AvailabilityHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         self._handle_request()
 
+    def do_PATCH(self):
+        self._handle_request()
+
     def _handle_request(self):
         parsed_url = urlsplit(self.path)
         query = {

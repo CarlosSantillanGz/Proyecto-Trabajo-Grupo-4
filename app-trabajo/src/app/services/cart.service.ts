@@ -1,5 +1,6 @@
 import { computed, Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import type { EstadoPedido } from './orders.service';
 
 export interface CartProduct {
   id: number;
@@ -33,10 +34,11 @@ export interface ModalidadEntrega {
 
 export interface Pedido {
   id: string;
-  fecha: number;
+  fecha: number | string;
   items: CartItem[];
   total: number;
-  metodoPago: string;
+  metodoPago?: string;
+  estado?: EstadoPedido;
   modalidadEntrega: ModalidadEntrega;
   cliente: DatosCliente;
 }
@@ -50,9 +52,7 @@ export class CartService {
   private readonly pedidosStorageKey = 'fopesa_pedidos';
 
   private readonly cartItems = signal<CartItem[]>([]);
-  private readonly pedidosState = signal<Pedido[]>(
-    this.isBrowser ? this.cargarPedidos() : [],
-  );
+  private readonly pedidosState = signal<Pedido[]>(this.isBrowser ? this.cargarPedidos() : []);
 
   readonly items = this.cartItems.asReadonly();
   readonly pedidos = this.pedidosState.asReadonly();
@@ -76,9 +76,7 @@ export class CartService {
 
       if (existingItem) {
         return items.map((item) =>
-          item.producto.id === producto.id
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item,
+          item.producto.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item,
         );
       }
 
@@ -91,9 +89,7 @@ export class CartService {
   increase(productId: number): void {
     this.cartItems.update((items) =>
       items.map((item) =>
-        item.producto.id === productId
-          ? { ...item, cantidad: item.cantidad + 1 }
-          : item,
+        item.producto.id === productId ? { ...item, cantidad: item.cantidad + 1 } : item,
       ),
     );
   }
@@ -102,18 +98,14 @@ export class CartService {
     this.cartItems.update((items) =>
       items
         .map((item) =>
-          item.producto.id === productId
-            ? { ...item, cantidad: item.cantidad - 1 }
-            : item,
+          item.producto.id === productId ? { ...item, cantidad: item.cantidad - 1 } : item,
         )
         .filter((item) => item.cantidad > 0),
     );
   }
 
   remove(productId: number): void {
-    this.cartItems.update((items) =>
-      items.filter((item) => item.producto.id !== productId),
-    );
+    this.cartItems.update((items) => items.filter((item) => item.producto.id !== productId));
   }
 
   clear(): void {
@@ -138,32 +130,18 @@ export class CartService {
     this.orderConfirmed.set(false);
   }
 
-  confirmOrder(
-    cliente: DatosCliente,
-    metodoPago: string,
-    modalidadEntrega: ModalidadEntrega,
-  ): Pedido {
-    const pedido: Pedido = {
-      id: 'FOP-' + Date.now().toString().slice(-6),
-      fecha: Date.now(),
-      items: this.cartItems(),
-      total: this.totalPrice(),
-      metodoPago,
-      modalidadEntrega,
-      cliente,
-    };
-
+  registrarPedido(pedido: Pedido): void {
     this.pedidosState.update((pedidos) => [pedido, ...pedidos]);
     this.guardarPedidos(this.pedidosState());
-
     this.orderConfirmed.set(true);
     this.clear();
-
-    return pedido;
   }
 
   estadoPedido(pedido: Pedido): number {
-    const minutos = (Date.now() - pedido.fecha) / 60000;
+    if (pedido.estado) {
+      return Math.max(0, ['Recibido', 'Confirmado', 'Listo', 'Entregado'].indexOf(pedido.estado));
+    }
+    const minutos = (Date.now() - new Date(pedido.fecha).getTime()) / 60000;
     if (minutos < 1) return 0;
     if (minutos < 3) return 1;
     if (minutos < 6) return 2;
