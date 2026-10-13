@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable, InjectionToken } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { INVENTORY_API_URL } from './api-endpoints';
 
 export interface DisponibilidadProducto {
   idProducto: number;
@@ -9,11 +10,6 @@ export interface DisponibilidadProducto {
   cantidadSolicitada: number;
   puedeAtender: boolean;
 }
-
-export const INVENTORY_API_URL = new InjectionToken<string>('INVENTORY_API_URL', {
-  providedIn: 'root',
-  factory: () => 'https://fnmdsj99u0.execute-api.us-east-1.amazonaws.com',
-});
 
 @Injectable({ providedIn: 'root' })
 export class InventoryService {
