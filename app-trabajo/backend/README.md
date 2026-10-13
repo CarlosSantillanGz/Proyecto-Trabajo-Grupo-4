@@ -1,18 +1,22 @@
-# Availability API
+# FOPESA API
 
-The AWS Lambda handler checks `PRODUCTO.stock` and `PRODUCTO.estado` in the FOPESA SQL Server database.
+The AWS Lambda handler provides product-category, inventory, customer, and order operations against the FOPESA SQL Server database.
 
 ## Endpoint
 
 Configure an API Gateway HTTP API route with the Lambda integration:
 
 ```text
+GET /categorias
+GET /categorias/{idCategoria}/productos
 GET /productos/{idProducto}/disponibilidad?cantidad=1
 POST /clientes
 POST /pedidos
 PATCH /pedidos/{idPedido}/estado
 GET /pedidos/{idPedido}?contacto=correo-o-telefono
 ```
+
+`GET /categorias` returns the registered categories with their IDs, names, and descriptions. `GET /categorias/{idCategoria}/productos` returns active products associated with that category, including their description, price, and image. If the category exists but has no active products, the response has an empty `productos` array and a `mensaje` explaining that no products are available. An unknown category returns `404`. Configure both GET routes in API Gateway with the Lambda integration.
 
 The availability response includes `stock`, `disponible`, `cantidadSolicitada`, and `puedeAtender`. `POST /clientes` accepts `nombre`, `apellido`, `email`, `telefono`, and optional `direccion`; it inserts the customer or updates the row with the same email.
 

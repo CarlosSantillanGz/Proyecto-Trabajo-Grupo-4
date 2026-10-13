@@ -75,6 +75,77 @@ class AvailabilityHandlerTests(unittest.TestCase):
         self.assertEqual(response["statusCode"], 404)
 
 
+class CategoryHandlerTests(unittest.TestCase):
+    @patch(
+        "lambda_function._get_categories",
+        return_value=[
+            {"idCategoria": 1, "nombre": "Línea Hogar", "descripcion": "Productos del hogar."},
+            {"idCategoria": 2, "nombre": "Línea Parrillera", "descripcion": "Productos para parrilla."},
+        ],
+    )
+    def test_lists_registered_categories(self, get_categories):
+        response = lambda_handler(order_event("/categorias", method="GET"), None)
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(
+            json.loads(response["body"]),
+            {
+                "categorias": [
+                    {"idCategoria": 1, "nombre": "Línea Hogar", "descripcion": "Productos del hogar."},
+                    {"idCategoria": 2, "nombre": "Línea Parrillera", "descripcion": "Productos para parrilla."},
+                ]
+            },
+        )
+        get_categories.assert_called_once_with()
+
+    @patch(
+        "lambda_function._get_category_products",
+        return_value=[
+            {
+                "idProducto": 101,
+                "nombre": "Fósforos Inti",
+                "descripcion": "Caja de fósforos.",
+                "precio": 1.5,
+                "imagen": "https://example.com/producto.png",
+            }
+        ],
+    )
+    def test_lists_products_for_selected_category(self, get_products):
+        response = lambda_handler(order_event("/categorias/1/productos", method="GET"), None)
+
+        self.assertEqual(response["statusCode"], 200)
+        payload = json.loads(response["body"])
+        self.assertEqual(payload["idCategoria"], 1)
+        self.assertEqual(payload["productos"][0]["idProducto"], 101)
+        self.assertNotIn("mensaje", payload)
+        get_products.assert_called_once_with(1)
+
+    @patch("lambda_function._get_category_products", return_value=[])
+    def test_reports_category_without_products(self, get_products):
+        response = lambda_handler(order_event("/categorias/5/productos", method="GET"), None)
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(
+            json.loads(response["body"]),
+            {
+                "idCategoria": 5,
+                "productos": [],
+                "mensaje": "No hay productos disponibles en esta categoría",
+            },
+        )
+        get_products.assert_called_once_with(5)
+
+    @patch(
+        "lambda_function._get_category_products",
+        side_effect=ApiError(404, "No se encontró la categoría"),
+    )
+    def test_returns_not_found_for_unknown_category(self, _get_products):
+        response = lambda_handler(order_event("/categorias/99/productos", method="GET"), None)
+
+        self.assertEqual(response["statusCode"], 404)
+        self.assertEqual(json.loads(response["body"])["mensaje"], "No se encontró la categoría")
+
+
 class CustomerRegistrationHandlerTests(unittest.TestCase):
     customer = {
         "nombre": "Ana María",
