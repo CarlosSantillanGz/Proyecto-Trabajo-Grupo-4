@@ -1,10 +1,11 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CartService, Pedido } from '../../services/cart.service';
 import { OrdersService } from '../../services/orders.service';
+
 
 @Component({
   selector: 'app-seguimiento-pedido',
@@ -16,6 +17,7 @@ import { OrdersService } from '../../services/orders.service';
 export class SeguimientoPedido {
   protected readonly cart = inject(CartService);
   private readonly ordersService = inject(OrdersService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   protected numeroPedido = '';
   protected contacto = '';
@@ -79,6 +81,7 @@ export class SeguimientoPedido {
           : 'No se pudo consultar el pedido. Verifica la conexión e inténtalo nuevamente.';
     } finally {
       this.buscando = false;
+      this.cdr.detectChanges();
     }
   }
 

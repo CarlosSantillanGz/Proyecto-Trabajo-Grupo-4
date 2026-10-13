@@ -12,7 +12,7 @@ export interface DisponibilidadProducto {
 
 export const INVENTORY_API_URL = new InjectionToken<string>('INVENTORY_API_URL', {
   providedIn: 'root',
-  factory: () => 'http://localhost:8000',
+  factory: () => 'https://fnmdsj99u0.execute-api.us-east-1.amazonaws.com',
 });
 
 @Injectable({ providedIn: 'root' })
