@@ -195,6 +195,64 @@ def _connect_database():
     return pyodbc.connect(connection_string, timeout=5)
 
 
+def _get_categories():
+    connection = _connect_database()
+    try:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                "SELECT id_categoria, nombre, descripcion "
+                "FROM CATEGORIA ORDER BY nombre, id_categoria"
+            )
+            return [
+                {
+                    "idCategoria": int(row[0]),
+                    "nombre": str(row[1]),
+                    "descripcion": str(row[2] or ""),
+                }
+                for row in cursor.fetchall()
+            ]
+        finally:
+            cursor.close()
+    finally:
+        connection.close()
+
+
+def _get_category_products(category_id):
+    connection = _connect_database()
+    try:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                "SELECT id_categoria FROM CATEGORIA WHERE id_categoria = ?",
+                category_id,
+            )
+            if cursor.fetchone() is None:
+                raise ApiError(404, "No se encontró la categoría")
+
+            cursor.execute(
+                "SELECT id_producto, nombre, descripcion, precio, imagen "
+                "FROM PRODUCTO "
+                "WHERE id_categoria = ? AND estado = 1 "
+                "ORDER BY nombre, id_producto",
+                category_id,
+            )
+            return [
+                {
+                    "idProducto": int(row[0]),
+                    "nombre": str(row[1]),
+                    "descripcion": str(row[2] or ""),
+                    "precio": float(row[3]),
+                    "imagen": str(row[4] or ""),
+                }
+                for row in cursor.fetchall()
+            ]
+        finally:
+            cursor.close()
+    finally:
+        connection.close()
+
+
 def _create_order(order):
     connection = _connect_database()
     try:
@@ -429,6 +487,31 @@ def lambda_handler(event, context):
         response["body"] = ""
         return response
     path = event.get("rawPath") or event.get("path") or ""
+    if method == "GET" and path == "/categorias":
+        try:
+            return _response(200, {"categorias": _get_categories()})
+        except RuntimeError:
+            return _response(500, {"mensaje": "La conexión a la base de datos no está configurada"})
+        except Exception:
+            return _response(503, {"mensaje": "No se pudieron consultar las categorías"})
+
+    category_match = re.fullmatch(r"/categorias/(\d+)/productos", path)
+    if method == "GET" and category_match:
+        category_id = int(category_match.group(1))
+        try:
+            products = _get_category_products(category_id)
+        except RuntimeError:
+            return _response(500, {"mensaje": "La conexión a la base de datos no está configurada"})
+        except ApiError as error:
+            return _response(error.status_code, {"mensaje": str(error)})
+        except Exception:
+            return _response(503, {"mensaje": "No se pudieron consultar los productos de la categoría"})
+
+        payload = {"idCategoria": category_id, "productos": products}
+        if not products:
+            payload["mensaje"] = "No hay productos disponibles en esta categoría"
+        return _response(200, payload)
+
     try:
         if method == "POST" and path == "/pedidos":
             order = _parse_order(event)
