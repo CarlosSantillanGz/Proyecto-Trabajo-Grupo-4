@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { INVENTORY_API_URL } from './inventory.service';
+import { ORDERS_API_URL } from './api-endpoints';
 
 export type EstadoPedido = 'Recibido' | 'Confirmado' | 'Listo' | 'Entregado';
 export type ModalidadPedido = 'delivery' | 'pickup';
@@ -39,7 +39,7 @@ export interface PedidoConsultado extends Omit<PedidoCreado, 'modalidad'> {
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = inject(INVENTORY_API_URL).replace(/\/$/, '');
+  private readonly apiUrl = inject(ORDERS_API_URL).replace(/\/$/, '');
 
   crear(
     idCliente: number,

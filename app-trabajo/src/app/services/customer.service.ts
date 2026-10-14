@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { INVENTORY_API_URL } from './inventory.service';
+import { CUSTOMER_API_URL } from './api-endpoints';
 
 export interface CustomerRegistration {
   nombre: string;
@@ -19,7 +19,7 @@ export interface CustomerRegistrationResult {
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = inject(INVENTORY_API_URL).replace(/\/$/, '');
+  private readonly apiUrl = inject(CUSTOMER_API_URL).replace(/\/$/, '');
 
   registrar(customer: CustomerRegistration): Promise<CustomerRegistrationResult> {
     return firstValueFrom(
