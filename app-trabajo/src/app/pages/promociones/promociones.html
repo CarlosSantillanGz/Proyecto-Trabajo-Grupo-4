@@ -8,8 +8,18 @@
     </p>
   </header>
 
-  <section class="promociones__grid" aria-label="Promociones disponibles">
-    @for (promocion of promociones; track promocion.id) {
+  @if (estadoCarga() === 'loading') {
+    <p class="promociones__estado" role="status">Cargando promociones...</p>
+  } @else if (estadoCarga() === 'error') {
+    <div class="promociones__estado" role="alert">
+      <p>No se pudieron cargar las promociones.</p>
+      <button type="button" (click)="cargarPromociones()">Reintentar</button>
+    </div>
+  } @else if (promociones().length === 0) {
+    <p class="promociones__estado">No hay promociones disponibles en este momento.</p>
+  } @else {
+    <section class="promociones__grid" aria-label="Promociones disponibles">
+    @for (promocion of promociones(); track promocion.id) {
       <article class="promocion">
         <div class="promocion__imagen-contenedor">
           <img class="promocion__imagen" [src]="promocion.producto.imagen" [alt]="promocion.producto.nombre" />
@@ -28,7 +38,8 @@
         </div>
       </article>
     }
-  </section>
+    </section>
+  }
 
   <p class="promociones__nota">
     Promociones referenciales. Consulta disponibilidad y condiciones comerciales con nuestro equipo.

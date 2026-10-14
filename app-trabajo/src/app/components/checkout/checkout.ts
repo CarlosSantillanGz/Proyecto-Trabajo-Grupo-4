@@ -1,11 +1,12 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, PLATFORM_ID, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CartService, ModalidadEntrega, Pedido } from '../../services/cart.service';
 import { CustomerService } from '../../services/customer.service';
 import { OrdersService } from '../../services/orders.service';
+import { DeliveryModesService, ModalidadCheckout } from '../../services/delivery-modes.service';
 
 type PasoCheckout = 'datos' | 'entrega' | 'pago' | 'confirmado';
 
@@ -20,10 +21,13 @@ export class Checkout {
   protected readonly cart = inject(CartService);
   private readonly customerService = inject(CustomerService);
   private readonly ordersService = inject(OrdersService);
+  private readonly deliveryModesService = inject(DeliveryModesService);
+  private readonly platformId = inject(PLATFORM_ID);
   protected readonly registrandoCliente = signal(false);
   protected readonly registrandoPedido = signal(false);
   protected readonly errorRegistroCliente = signal('');
   protected readonly errorRegistroPedido = signal('');
+  protected readonly estadoModalidades = signal<'loading' | 'loaded' | 'error'>('loading');
   protected readonly errorCamposCliente =
     'Completa nombres, apellidos, un correo válido y un teléfono de 6 a 20 caracteres.';
 
@@ -55,24 +59,9 @@ export class Checkout {
   protected metodoPago: string | null = null;
   protected codigoPago = '';
 
-  protected modalidadesEntrega: ModalidadEntrega[] = [
-    {
-      id: 'domicilio',
-      nombre: 'Entrega a domicilio',
-      detalle: 'Recibe tu pedido en la dirección registrada.',
-      tiempo: 'Entre 2 y 5 días hábiles',
-      costo: 8,
-    },
-    {
-      id: 'recojo',
-      nombre: 'Recojo en punto Fopesa',
-      detalle: 'Recoge tu pedido en el punto de atención coordinado.',
-      tiempo: 'Te avisaremos cuando esté listo',
-      costo: 0,
-    },
-  ];
+  protected readonly modalidadesEntrega = signal<ModalidadCheckout[]>([]);
 
-  protected modalidadEntrega: ModalidadEntrega | null = null;
+  protected modalidadEntrega: ModalidadCheckout | null = null;
 
   protected tarjeta = {
     numero: '',
@@ -80,6 +69,22 @@ export class Checkout {
     vencimiento: '',
     cvv: '',
   };
+
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      void this.cargarModalidades();
+    }
+  }
+
+  protected async cargarModalidades(): Promise<void> {
+    this.estadoModalidades.set('loading');
+    try {
+      this.modalidadesEntrega.set(await this.deliveryModesService.listar());
+      this.estadoModalidades.set('loaded');
+    } catch {
+      this.estadoModalidades.set('error');
+    }
+  }
 
   protected async continuarAPago(form: NgForm): Promise<void> {
     if (form.invalid) {
@@ -111,7 +116,7 @@ export class Checkout {
     this.paso = 'datos';
   }
 
-  protected seleccionarEntrega(modalidad: ModalidadEntrega): void {
+  protected seleccionarEntrega(modalidad: ModalidadCheckout): void {
     this.modalidadEntrega = modalidad;
   }
 
@@ -179,7 +184,7 @@ export class Checkout {
           idProducto: item.producto.id,
           cantidad: item.cantidad,
         })),
-        this.modalidadEntrega.id === 'recojo' ? 'pickup' : 'delivery',
+        this.modalidadEntrega.codigoPedido,
       );
       const pedido: Pedido = {
         id: order.idPedido,

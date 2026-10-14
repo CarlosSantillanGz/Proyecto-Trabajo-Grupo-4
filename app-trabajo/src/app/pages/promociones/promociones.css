@@ -58,6 +58,22 @@ h1 {
   gap: 20px;
 }
 
+.promociones__estado {
+  padding: 20px 0;
+  color: #525252;
+}
+
+.promociones__estado button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--azul-fopesa);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
 .promocion {
   display: grid;
   grid-template-columns: minmax(150px, 0.8fr) 1.2fr;
