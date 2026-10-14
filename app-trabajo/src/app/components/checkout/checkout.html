@@ -62,8 +62,18 @@
         <h2 id="checkout-title">Selecciona la modalidad de entrega</h2>
         <p class="checkout__intro">Elige cómo deseas recibir tu pedido.</p>
 
+        @if (estadoModalidades() === 'loading') {
+          <p class="checkout__intro" role="status">Cargando modalidades de entrega...</p>
+        } @else if (estadoModalidades() === 'error') {
+          <div class="checkout__error" role="alert">
+            <p>No se pudieron cargar las modalidades de entrega.</p>
+            <button type="button" (click)="cargarModalidades()">Reintentar</button>
+          </div>
+        } @else if (modalidadesEntrega().length === 0) {
+          <p class="checkout__error" role="status">No hay modalidades de entrega disponibles.</p>
+        } @else {
         <div class="modalidades-entrega" role="radiogroup" aria-label="Modalidades de entrega">
-          @for (modalidad of modalidadesEntrega; track modalidad.id) {
+          @for (modalidad of modalidadesEntrega(); track modalidad.id) {
             <button
               type="button"
               class="modalidad-entrega"
@@ -78,12 +88,15 @@
               <span>
                 <strong>{{ modalidad.nombre }}</strong>
                 <small>{{ modalidad.detalle }}</small>
-                <small>{{ modalidad.tiempo }}</small>
+                @if (modalidad.tiempo) {
+                  <small>{{ modalidad.tiempo }}</small>
+                }
               </span>
               <b>{{ modalidad.costo === 0 ? 'Gratis' : 'S/ ' + modalidad.costo }}</b>
             </button>
           }
         </div>
+        }
 
         <div class="checkout__acciones">
           <button class="checkout__volver" type="button" (click)="volverADatos()">Volver</button>

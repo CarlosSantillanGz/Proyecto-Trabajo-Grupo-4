@@ -1,5 +1,6 @@
 import { computed, Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import type { EstadoPedido } from './orders.service';
 
 export interface CartProduct {
@@ -48,6 +49,7 @@ export interface Pedido {
 })
 export class CartService {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly pedidosStorageKey = 'fopesa_pedidos';
 
@@ -151,10 +153,7 @@ export class CartService {
   scrollToContact(event: Event): void {
     event.preventDefault();
     this.close();
-    document.getElementById('contacto')?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
+    void this.router.navigate(['/'], { fragment: 'contacto' });
   }
 
   private cargarPedidos(): Pedido[] {
